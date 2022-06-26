@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"golearning/webassembly/compress"
 	"io"
 	"syscall/js"
 )
@@ -24,7 +25,7 @@ var compressFunc = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 
 	src := bytes.NewReader(srcBytes)
 
-	r, err := compressor.Compress(src)
+	r, err := compress.Compress(src)
 	if err != nil {
 		panic(err)
 	}
