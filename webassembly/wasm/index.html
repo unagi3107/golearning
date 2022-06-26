@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Go wasm example</title>
+  </head>
+  <body>
+    <form id="fileForm" action="#">
+      <input type="file" name="file" />
+      <button>Download as gzip</button>
+    </form>
+
+    <script src="./wasm_exec.js"></script>
+    <script>
+      (async () => {
+        const go = new Go();
+        const { instance } = await WebAssembly.instantiateStreaming(
+          fetch('main.wasm'),
+          go.importObject
+        );
+        await go.run(instance);
+      })();
+    </script>
+    <script>
+      const fileForm = document.getElementById('fileForm');
+      const fileField = fileForm.children.file;
+      fileForm.addEventListener('submit', e => {
+        e.preventDefault();
+        if (fileField.files.length < 1) {
+          return;
+        }
+        const file = fileField.files[0];
+        const gzName = `${file.name}.gz`;
+        const fr = new FileReader();
+        fr.addEventListener('loadend', () => {
+          const bytes = new Uint8Array(fr.result);
+          const result = compress(bytes);
+          const blob = new Blob([result], { type: 'application/gzip' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = gzName;
+          a.click();
+        });
+        fr.readAsArrayBuffer(file);
+      });
+    </script>
+  </body>
+</html>
